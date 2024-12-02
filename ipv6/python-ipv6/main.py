@@ -2,10 +2,6 @@ import socket
 import os
 import platform
 
-match platform.system:
-    case "Linux":
-        import sysctl
-
 import h2.connection
 import h2.config
 
@@ -34,7 +30,10 @@ def handle(sock):
                 match platform.system:
                     case "Linux":
                         bodytext += "running on Linux\n"
-                        if sysctl.filter('net.ipv6.bindv6only')[0] == 0:
+                        fd = open('/proc/sys/net/ipv6/bindv6only', r)
+                        bindv6only = read(fd)
+                        close(fd)
+                        if bindv6only:
                             bodytext += "IPv6 Wildcard sockets also bind on IPv4 by default\n"
                         else:
                             bodytext += "IPv6 Wildcard sockets do not bind on IPv4 by default - needs sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)\n"
